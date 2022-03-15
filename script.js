@@ -22,7 +22,6 @@ function isGameOver() {
   return player.gameboard.allShipsSunk() || computer.gameboard.allShipsSunk();
 }
 
-// set winner
 function setWinner() {
   if (computer.gameboard.allShipsSunk()) {
     gameStatus = "PLAYER_WINS";
@@ -31,12 +30,41 @@ function setWinner() {
   }
 }
 
-// display winner
 function displayWinner() {
   if (gameStatus === "PLAYER_WINS") {
     console.log("Player wins!");
   } else if (gameStatus === "COMPUTER_WINS") {
     console.log("Computer wins!");
+  }
+}
+
+function placeComputerShips() {
+  let ships = [];
+  ships.push(
+    Ship(2),
+    Ship(2),
+    Ship(2),
+    Ship(3),
+    Ship(3),
+    Ship(3),
+    Ship(4),
+    Ship(4),
+    Ship(6)
+  );
+
+  for (const ship of ships) {
+    let x, y, axis;
+    do {
+      x = Math.floor(Math.random() * 10);
+      y = Math.floor(Math.random() * 10);
+      if (Math.random() < 0.5) {
+        axis = "H";
+      } else {
+        axis = "V";
+      }
+    } while (!computer.gameboard.isValidShipPlacement(ship, x, y, axis));
+    console.log(ship, x, y, axis);
+    computer.gameboard.placeShip(ship, x, y, axis);
   }
 }
 
@@ -56,17 +84,7 @@ function gameLoop() {
   player.gameboard.placeShip(Ship(2), 0, 7, "H");
   player.gameboard.placeShip(Ship(6), 4, 9, "H");
 
-  // place computer ships
-  computer.gameboard.placeShip(Ship(2), 1, 0, "H");
-  // computer.gameboard.placeShip(Ship(3), 3, 4, "V");
-  // computer.gameboard.placeShip(Ship(4), 4, 0, "H");
-  // computer.gameboard.placeShip(Ship(3), 3, 2, "H");
-  // computer.gameboard.placeShip(Ship(4), 1, 2, "V");
-  // computer.gameboard.placeShip(Ship(2), 7, 2, "V");
-  // computer.gameboard.placeShip(Ship(2), 4, 5, "V");
-  // computer.gameboard.placeShip(Ship(3), 7, 5, "V");
-  // computer.gameboard.placeShip(Ship(2), 8, 8, "H");
-  // computer.gameboard.placeShip(Ship(6), 0, 9, "H");
+  placeComputerShips();
 
   displayController.populateBoards(
     player.gameboard.board,

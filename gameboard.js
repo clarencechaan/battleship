@@ -10,27 +10,44 @@ const Gameboard = () => {
     board.push(row);
   }
 
-  const placeShip = (ship, x, y, orientation) => {
-    if (orientation === "H") {
+  const isValidShipPlacement = (ship, x, y, axis) => {
+    if (axis === "H") {
       // horizontal
       // check if ship can be placed
       for (let i = 0; i < ship.length; i++) {
-        if (board[y][x + i] !== " ") {
-          throw new Error("Can't place ship in invalid location");
+        if (x + i > 9 || board[y][x + i] !== " ") {
+          return false;
         }
+      }
+    } else if (axis === "V") {
+      // vertical
+      // check if ship can be placed
+      for (let i = 0; i < ship.length; i++) {
+        if (y + i > 9 || board[y + i][x] !== " ") {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const placeShip = (ship, x, y, axis) => {
+    if (axis === "H") {
+      // horizontal
+      // check if ship can be placed
+      if (!isValidShipPlacement(ship, x, y, axis)) {
+        throw new Error("Can't place ship in invalid location");
       }
 
       // places ship on board, with cell index
       for (let i = 0; i < ship.length; i++) {
         board[y][x + i] = [ship, i];
       }
-    } else if (orientation === "V") {
+    } else if (axis === "V") {
       // vertical
       // check if ship can be placed
-      for (let i = 0; i < ship.length; i++) {
-        if (board[y + i][x] !== " ") {
-          throw new Error("Can't place ship in invalid location");
-        }
+      if (!isValidShipPlacement(ship, x, y, axis)) {
+        throw new Error("Can't place ship in invalid location");
       }
 
       // places ship on board, with cell index
@@ -80,6 +97,7 @@ const Gameboard = () => {
 
   return {
     board,
+    isValidShipPlacement,
     placeShip,
     receiveAttack,
     allShipsSunk,
