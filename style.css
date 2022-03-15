@@ -1,0 +1,26 @@
+#board-container {
+    display: flex;
+}
+
+.board {
+    display: grid;
+    min-width: 500px;
+    min-height: 500px;
+    background-color: gray;
+    border: 1px solid black;
+    grid-template-rows: repeat(10, 1fr);
+}
+
+.board > div {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+}
+
+.board > div > div {
+    border: 1px solid black;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    display: grid;
+    place-items: center;
+}
