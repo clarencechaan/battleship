@@ -77,6 +77,7 @@ const resetBtn = document.querySelector("reset");
 reset.onclick = () => {
   gameStatus = "PLACING_SHIPS";
   displayController.displayMessage("Place your ships!");
+  placingShipIndex = 0;
   gameLoop();
 };
 
