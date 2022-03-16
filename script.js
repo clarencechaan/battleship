@@ -1,5 +1,4 @@
 import displayController from "./displayController.js";
-import Ship from "./ship.js";
 import Player from "./player.js";
 
 let player;
