@@ -4,17 +4,16 @@ import Player from "./player.js";
 
 let player;
 let computer;
-let gameStatus = "ONGOING";
+let gameStatus = "PLACING_SHIPS";
+let placingShipIndex = 0;
+let axis = "H";
 
 // attempt attack on computer and computer attacks back
 function attemptAttackOnComputer(x, y) {
   if (computer.gameboard.isValidAttack(x, y)) {
     computer.gameboard.receiveAttack(x, y);
     player.gameboard.randomizeReceiveAttack();
-    displayController.populateBoards(
-      player.gameboard.board,
-      computer.gameboard.board
-    );
+    displayController.updateUI(player.gameboard, computer.gameboard);
   }
 }
 
@@ -32,39 +31,31 @@ function setWinner() {
 
 function displayWinner() {
   if (gameStatus === "PLAYER_WINS") {
-    console.log("Player wins!");
+    displayController.displayMessage("Congratulations! You win!");
   } else if (gameStatus === "COMPUTER_WINS") {
-    console.log("Computer wins!");
+    displayController.displayMessage("Sorry! You lost!");
   }
 }
 
-function placeComputerShips() {
-  let ships = [];
-  ships.push(
-    Ship(2),
-    Ship(2),
-    Ship(2),
-    Ship(3),
-    Ship(3),
-    Ship(3),
-    Ship(4),
-    Ship(4),
-    Ship(6)
-  );
+function attemptPlacePlayerShip(ship, x, y, axis) {
+  if (
+    gameStatus === "PLACING_SHIPS" &&
+    player.gameboard.isValidShipPlacement(ship, x, y, axis)
+  ) {
+    player.gameboard.placeShip(ship, x, y, axis);
+    displayController.populatePlayerBoard(player.gameboard.board);
+    placingShipIndex++;
+  }
+}
 
-  for (const ship of ships) {
-    let x, y, axis;
-    do {
-      x = Math.floor(Math.random() * 10);
-      y = Math.floor(Math.random() * 10);
-      if (Math.random() < 0.5) {
-        axis = "H";
-      } else {
-        axis = "V";
-      }
-    } while (!computer.gameboard.isValidShipPlacement(ship, x, y, axis));
-    console.log(ship, x, y, axis);
-    computer.gameboard.placeShip(ship, x, y, axis);
+function toggleAxis() {
+  const changeAxisBtn = document.querySelector("#change-axis");
+  if (axis === "H") {
+    axis = "V";
+    changeAxisBtn.innerText = "Axis: Y";
+  } else if (axis === "V") {
+    axis = "H";
+    changeAxisBtn.innerText = "Axis: X";
   }
 }
 
@@ -72,40 +63,10 @@ function gameLoop() {
   player = Player();
   computer = Player();
 
-  // place player ships
-  player.gameboard.placeShip(Ship(2), 0, 0, "H");
-  player.gameboard.placeShip(Ship(3), 3, 0, "V");
-  player.gameboard.placeShip(Ship(4), 6, 0, "H");
-  player.gameboard.placeShip(Ship(4), 0, 2, "V");
-  player.gameboard.placeShip(Ship(3), 5, 2, "H");
-  player.gameboard.placeShip(Ship(2), 9, 2, "V");
-  player.gameboard.placeShip(Ship(2), 5, 5, "V");
-  player.gameboard.placeShip(Ship(3), 9, 5, "V");
-  player.gameboard.placeShip(Ship(2), 0, 7, "H");
-  player.gameboard.placeShip(Ship(6), 4, 9, "H");
+  computer.gameboard.placeComputerShips();
 
-  placeComputerShips();
-
-  displayController.populateBoards(
-    player.gameboard.board,
-    computer.gameboard.board
-  );
-
-  // add event listeners to computer board
-  const cells = document.querySelectorAll("#computer-board > div > div");
-  for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-      cells[i * 10 + j].onclick = () => {
-        if (gameStatus === "ONGOING") {
-          attemptAttackOnComputer(j, i);
-          if (isGameOver()) {
-            setWinner();
-            displayWinner();
-          }
-        }
-      };
-    }
-  }
+  displayController.disableComputerBoard();
+  displayController.updateUI(player.gameboard, computer.gameboard);
 }
 
 displayController.createBlankBoards();
@@ -114,7 +75,76 @@ gameLoop();
 // add event listener to reset button
 const resetBtn = document.querySelector("reset");
 reset.onclick = () => {
-  displayController.clearBoards();
-  gameStatus = "ONGOING";
+  gameStatus = "PLACING_SHIPS";
+  displayController.displayMessage("Place your ships!");
   gameLoop();
+};
+
+// add event listeners to computer board
+const computerCells = document.querySelectorAll("#computer-board > div > div");
+for (let i = 0; i < 10; i++) {
+  for (let j = 0; j < 10; j++) {
+    computerCells[i * 10 + j].onclick = () => {
+      if (gameStatus === "ONGOING") {
+        attemptAttackOnComputer(j, i);
+        if (isGameOver()) {
+          setWinner();
+          displayWinner();
+        }
+      }
+    };
+  }
+}
+
+// add event listeners to player board for ship placement
+const playerCells = document.querySelectorAll("#player-board > div > div");
+for (let i = 0; i < 10; i++) {
+  for (let j = 0; j < 10; j++) {
+    // attempt to place ship on click
+    playerCells[i * 10 + j].onclick = () => {
+      attemptPlacePlayerShip(
+        player.gameboard.ships[placingShipIndex],
+        j,
+        i,
+        axis
+      );
+      if (placingShipIndex >= player.gameboard.ships.length) {
+        placingShipIndex = 0;
+        gameStatus = "ONGOING";
+        displayController.displayMessage("Sink your enemy's ships!");
+        displayController.enableComputerBoard();
+      }
+    };
+
+    // show current ship to place on hover
+    playerCells[i * 10 + j].onmouseover = () => {
+      displayController.populatePlayerBoard(player.gameboard.board);
+      if (
+        gameStatus === "PLACING_SHIPS" &&
+        player.gameboard.isValidShipPlacement(
+          player.gameboard.ships[placingShipIndex],
+          j,
+          i,
+          axis
+        )
+      ) {
+        displayController.peekPlayerShipPlacement(
+          player.gameboard.ships[placingShipIndex],
+          j,
+          i,
+          axis
+        );
+      }
+    };
+  }
+}
+
+// add event listener to change axis button
+const changeAxisBtn = document.querySelector("#change-axis");
+changeAxisBtn.onclick = toggleAxis;
+
+// clear player board on hover out of player board
+const playerBoard = document.querySelector("#player-board");
+playerBoard.onmouseout = () => {
+  displayController.populatePlayerBoard(player.gameboard.board);
 };

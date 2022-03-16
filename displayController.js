@@ -9,6 +9,12 @@ const displayController = (() => {
       for (let j = 0; j < 10; j++) {
         const playerCell = document.createElement("div");
         const computerCell = document.createElement("div");
+        const playerMarker = document.createElement("div");
+        const computerMarker = document.createElement("div");
+        playerMarker.className = "marker";
+        computerMarker.className = "marker";
+        playerCell.appendChild(playerMarker);
+        computerCell.appendChild(computerMarker);
         playerRow.appendChild(playerCell);
         computerRow.appendChild(computerCell);
       }
@@ -17,25 +23,35 @@ const displayController = (() => {
     }
   }
 
-  function clearBoards() {
-    const cells = document.querySelectorAll(
-      "#computer-board > div > div, #player-board > div > div"
-    );
-    for (const c of cells) {
-      c.innerText = "";
-    }
-  }
-
   function populatePlayerBoard(board) {
     const cells = document.querySelectorAll("#player-board > div > div");
+    const markers = document.querySelectorAll(
+      "#player-board > div > div > div"
+    );
     for (let i = 0; i < 10; i++) {
       for (let j = 0; j < 10; j++) {
-        if (typeof board[i][j][0] === "object") {
-          cells[i * 10 + j].innerText = "O";
+        // sunk ship
+        if (typeof board[i][j][0] === "object" && board[i][j][0].isSunk()) {
+          cells[i * 10 + j].className = "sunk";
+          // not sunk ship
+        } else if (
+          typeof board[i][j][0] === "object" &&
+          board[i][j][2] === "O"
+        ) {
+          cells[i * 10 + j].className = "ship";
+          // hit ship
+        } else if (
+          typeof board[i][j][0] === "object" &&
+          board[i][j][2] === "X"
+        ) {
+          markers[i * 10 + j].className = "marker hit";
+          // missed attack
         } else if (board[i][j] === "M") {
-          cells[i * 10 + j].innerText = "M";
-        } else if (board[i][j] === "X") {
-          cells[i * 10 + j].innerText = "X";
+          markers[i * 10 + j].className = "marker miss";
+          // no marker
+        } else if (board[i][j] === " ") {
+          cells[i * 10 + j].className = "";
+          markers[i * 10 + j].className = "marker";
         }
       }
     }
@@ -43,30 +59,95 @@ const displayController = (() => {
 
   function populateComputerBoard(board) {
     const cells = document.querySelectorAll("#computer-board > div > div");
+    const markers = document.querySelectorAll(
+      "#computer-board > div > div > div"
+    );
     for (let i = 0; i < 10; i++) {
       for (let j = 0; j < 10; j++) {
-        if (typeof board[i][j][0] === "object") {
-          cells[i * 10 + j].innerText = "O";
+        // sunk ship
+        if (typeof board[i][j][0] === "object" && board[i][j][0].isSunk()) {
+          cells[i * 10 + j].className = "sunk";
+          // not sunk ship
+          // } else if (
+          //   typeof board[i][j][0] === "object" &&
+          //   board[i][j][2] === "O"
+          // ) {
+          //   cells[i * 10 + j].className = "ship"
+          //   markers[i * 10 + j].className = "marker";
+          // hit ship
+        } else if (
+          typeof board[i][j][0] === "object" &&
+          board[i][j][2] === "X"
+        ) {
+          markers[i * 10 + j].className = "marker hit";
+          // missed attack
         } else if (board[i][j] === "M") {
-          cells[i * 10 + j].innerText = "M";
-        } else if (board[i][j] === "X") {
-          cells[i * 10 + j].innerText = "X";
+          markers[i * 10 + j].className = "marker miss";
+          // no marker
+        } else if (board[i][j] === " " || typeof board[i][j][0] === "object") {
+          cells[i * 10 + j].className = "";
+          markers[i * 10 + j].className = "marker";
         }
       }
     }
   }
 
-  function populateBoards(playerBoard, computerBoard) {
-    populatePlayerBoard(playerBoard);
-    populateComputerBoard(computerBoard);
+  function updateUI(playerGameboard, computerGameboard) {
+    populatePlayerBoard(playerGameboard.board);
+    populateComputerBoard(computerGameboard.board);
+    updateShipsRemaining(computerGameboard);
+  }
+
+  function peekPlayerShipPlacement(ship, x, y, axis) {
+    const playerCells = document.querySelectorAll("#player-board > div > div");
+    if (axis === "H") {
+      for (let i = 0; i < ship.length; i++) {
+        playerCells[y * 10 + x + i].className = "ship";
+      }
+    } else if (axis === "V") {
+      for (let i = 0; i < ship.length; i++) {
+        playerCells[(y + i) * 10 + x].className = "ship";
+      }
+    }
+  }
+
+  function updateShipsRemaining(gameboard) {
+    const shipsRemaining = document.querySelector("#ships-remaining");
+    shipsRemaining.innerText =
+      "Enemy Ships Remaining: " + gameboard.shipsRemaining();
+  }
+
+  function displayMessage(message) {
+    const messageDiv = document.querySelector("#message");
+    messageDiv.innerText = message;
+  }
+
+  function disableComputerBoard() {
+    const computerBoard = document.querySelector(
+      "#board-container > div:nth-child(2)"
+    );
+    console.log(computerBoard);
+    computerBoard.style.opacity = "0.2";
+  }
+
+  function enableComputerBoard() {
+    const computerBoard = document.querySelector(
+      "#board-container > div:nth-child(2)"
+    );
+    console.log(computerBoard);
+    computerBoard.style.opacity = "1";
   }
 
   return {
     createBlankBoards,
-    clearBoards,
     populatePlayerBoard,
     populateComputerBoard,
-    populateBoards,
+    updateUI,
+    peekPlayerShipPlacement,
+    updateShipsRemaining,
+    displayMessage,
+    disableComputerBoard,
+    enableComputerBoard,
   };
 })();
 
