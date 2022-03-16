@@ -66,6 +66,7 @@ function gameLoop() {
   computer.gameboard.placeComputerShips();
 
   displayController.disableComputerBoard();
+  displayController.enableChangeAxisBtn();
   displayController.updateUI(player.gameboard, computer.gameboard);
 }
 
@@ -113,6 +114,7 @@ for (let i = 0; i < 10; i++) {
         gameStatus = "ONGOING";
         displayController.displayMessage("Sink your enemy's ships!");
         displayController.enableComputerBoard();
+        displayController.disableChangeAxisBtn();
       }
     };
 

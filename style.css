@@ -30,6 +30,7 @@ body {
     flex-direction: column;
     font-size: 30px;
     align-items: center;
+    transition: .5s;
 }
 
 #buttons {
@@ -48,6 +49,7 @@ body {
     cursor: pointer;
     font-size: 30px;
     margin-top: 15px;
+    transition: .5s;
 }
 
 #buttons > button:hover {
@@ -90,18 +92,22 @@ body {
 
 .board > div > div.sunk {
     background-color: red;
+    transition: .5s;
+}
+
+.marker {
+    transition: .5s;
+    border-radius: 50%;
 }
 
 .marker.hit { 
     width: 35%;
     height: 35%;
     background-color: red;
-    border-radius: 50%;
 }
 
 .marker.miss {
     width: 35%;
     height: 35%;
     background-color: white;
-    border-radius: 50%;
 }

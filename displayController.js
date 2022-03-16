@@ -138,6 +138,15 @@ const displayController = (() => {
     computerBoard.style.opacity = "1";
   }
 
+  function disableChangeAxisBtn() {
+    const changeAxisBtn = document.querySelector("#change-axis");
+    changeAxisBtn.style.opacity = "0.2";
+  }
+
+  function enableChangeAxisBtn() {
+    const changeAxisBtn = document.querySelector("#change-axis");
+    changeAxisBtn.style.opacity = "1";
+  }
   return {
     createBlankBoards,
     populatePlayerBoard,
@@ -148,6 +157,8 @@ const displayController = (() => {
     displayMessage,
     disableComputerBoard,
     enableComputerBoard,
+    disableChangeAxisBtn,
+    enableChangeAxisBtn,
   };
 })();
 
